@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/controller/produtos_controller.dart';
 import 'package:flutter_application_1/models/produto.dart';
 import 'package:flutter_application_1/repository/produtos_repositrys.dart';
 import 'package:flutter_application_1/utils/atlualizar.dart';
@@ -13,10 +14,11 @@ class ProdutosPages extends StatefulWidget {
 class _ProdutosPagesState extends State<ProdutosPages> {
   final TextEditingController _searchController = TextEditingController();
   final ProdutosRepositrys crud = ProdutosRepositrys();
+  final ProdutosController controller = ProdutosController();
 
   List<Produto> _produtos = [];
   List<Produto> _produtosFiltrados = [];
-  late Future<void> buscarBuilder;
+  
 
   @override
   void dispose() {
@@ -56,93 +58,6 @@ class _ProdutosPagesState extends State<ProdutosPages> {
   }
 //----------------------------------------------------------------------\\
 
-  //novo metodo para buscar produtos, armazenar na vareavel _produtos
-  //Future<void> buscarRegistros() async {
-  //  String url = "http://192.168.5.84/api_vazia/produtos";
-  //  var response = await http.get(Uri.parse(url));
-//
-  //  if (response.statusCode == 200) {
-  //    var json = jsonDecode(response.body);
-  //    _produtos = [];
-  //    for (var dados in json) {
-  //      Produto produto = Produto.fromNuvem(dados);
-  //      _produtos.add(produto);
-  //    }
-  //    _produtosFiltrados = _produtos;
-  //  } else {
-  //    return ErroDialog.mostrarErro(
-  //        context, "erro ao buscar Registros : ${response.body}");
-  //  }
-  //}
-
-  // Método para excluir dados do banco de dados
-  //Future<bool> excluirRegistros(int id) async {
-  //  String url = "http://192.168.5.84/api_vazia/produtos/$id";
-//
-  //  var response = await http.delete(Uri.parse(url));
-//
-  //  if (response.statusCode == 200) {
-  //    buscarBuilder = buscarRegistros();
-  //    return true;
-  //  } else {
-  //    debugPrint('Erro ao excluir produto: ${response.body}');
-  //    return false;
-  //  }
-  //}
-
-  // Método para atualizar registros do banco de dados
-
-  //Future<void> atualizarRegistro(int id, String nome, String email) async {
-  //  String baseUrl = "http://192.168.5.84/api_vazia/produtos";
-  //  String url = "$baseUrl/$id";
-//
-  //  try {
-  //    var response = await http.put(
-  //      Uri.parse(url),
-  //      headers: {
-  //        'Content-Type': 'application/json',
-  //      },
-  //      body: jsonEncode({
-  //        'nome': nome,
-  //        'email': email,
-  //      }),
-  //    );
-//
-  //    if (response.statusCode == 200) {
-  //      debugPrint('Produto atualizado com sucesso!');
-  //      buscarBuilder = buscarRegistros();
-  //    } else {
-  //      debugPrint('Erro ao atualizar produto: ${response.body}');
-  //    }
-  //  } catch (e) {
-  //    debugPrint('Ocorreu um erro: $e');
-  //  }
-  //}
-  //função para adicionar registros
-  //Future<void> adicionarRegistro(String nome, String email) async {
-  //  String url = "http://192.168.5.84/api_vazia/produtos";
-//
-  //  var response = await http.post(
-  //    Uri.parse(url),
-  //    headers: {
-  //      'Content-Type': 'application/json',
-  //    },
-  //    body: jsonEncode(
-  //      {
-  //        'nome': nome,
-  //        'email': email,
-  //      },
-  //    ),
-  //  );
-  //  if (response.statusCode == 200) {
-  //    debugPrint('Registro adicionado com sucesso.');
-  //    buscarBuilder = buscarRegistros();
-  //    setState(() {});
-  //  } else {
-  //    debugPrint('Erro ao adicionar registro: ${response.body}');
-  //  }
-  //}
-
   //funçaõ para filtrar os registros
   void _filtrarRegistros() {
     String pesquisa = _searchController.text.toLowerCase();
@@ -174,8 +89,8 @@ class _ProdutosPagesState extends State<ProdutosPages> {
   @override
   void initState() {
     super.initState();
-
-    buscarBuilder = buscarRegistros2();
+    controller.buscarBuilder = controller.buscarRegistros2();
+    
   }
 
   Future<void> _refresh() async {
@@ -218,7 +133,7 @@ class _ProdutosPagesState extends State<ProdutosPages> {
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: FutureBuilder(
-          future: buscarBuilder,
+          future:  controller.buscarBuilder,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
