@@ -178,6 +178,10 @@ class _ProdutosPagesState extends State<ProdutosPages> {
     buscarBuilder = buscarRegistros2();
   }
 
+  Future<void> _refresh() async {
+    await buscarRegistros2();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,98 +215,103 @@ class _ProdutosPagesState extends State<ProdutosPages> {
           },
         ),
       ),
-      body: FutureBuilder(
-        future: buscarBuilder,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (!snapshot.hasError) {
-            var registros = _produtosFiltrados;
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: FutureBuilder(
+          future: buscarBuilder,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (!snapshot.hasError) {
+              var registros = _produtosFiltrados;
 
-            return ListView.builder(
-              itemCount: registros.length,
-              itemBuilder: (context, index) {
-                var registro = registros[index];
-                return ListTile(
-                  title: Text(registro.nome),
-                  subtitle: Text(registro.email),
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text(
-                            "Detalhes do registro",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Text(
-                                'Nome: ${registro.nome}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              Text(
-                                'Email: ${registro.email}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                          actions: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    EditarRegistroDialog(
-                                      nomePri: 'Editar Registros',
-                                      buttonFunc: 'Salvar',
-                                      context: context,
-                                      nomeAtual: registro.nome,
-                                      emailAtual: registro.email,
-                                      onSalvar: (nome, email) async {
-                                        await atualizarRegistro2(
-                                            registro.id, nome, email);
-                                        setState(() {
-                                          // Atualiza a lista de registros
-                                          Navigator.of(context).pop();
-                                        });
-                                      },
-                                    ).mostrarDialog();
-                                  },
-                                  child: const Text(
-                                    "Editar",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
+              return ListView.builder(
+                itemCount: registros.length,
+                itemBuilder: (context, index) {
+                  var registro = registros[index];
+                  return ListTile(
+                    title: Text(registro.nome),
+                    subtitle: Text(registro.email),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text(
+                              "Detalhes do registro",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text(
+                                  'Nome: ${registro.nome}',
+                                  style: const TextStyle(color: Colors.white),
                                 ),
-                                TextButton(
-                                  onPressed: () async {
-                                    await excluirRegistros2(registro.id);
-                                    setState(() {
-                                      Navigator.of(context).pop();
-                                    });
-                                  },
-                                  child: const Icon(
-                                    Icons.auto_delete,
-                                    color: Colors.pink,
-                                    size: 24.0,
-                                  ),
+                                Text(
+                                  'Email: ${registro.email}',
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               ],
                             ),
-                          ],
-                          backgroundColor: const Color.fromARGB(255, 0, 25, 43),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          } else {
-            return Center(child: Text('Erro: ${snapshot.error}'));
-          }
-        },
+                            actions: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      EditarRegistroDialog(
+                                        nomePri: 'Editar Registros',
+                                        buttonFunc: 'Salvar',
+                                        context: context,
+                                        nomeAtual: registro.nome,
+                                        emailAtual: registro.email,
+                                        onSalvar: (nome, email) async {
+                                          await atualizarRegistro2(
+                                              registro.id, nome, email);
+                                          setState(() {
+                                            // Atualiza a lista de registros
+                                            Navigator.of(context).pop();
+                                          });
+                                        },
+                                      ).mostrarDialog();
+                                    },
+                                    child: const Text(
+                                      "Editar",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      await excluirRegistros2(registro.id);
+                                      setState(() {
+                                        Navigator.of(context).pop();
+                                      });
+                                    },
+                                    child: const Icon(
+                                      Icons.auto_delete,
+                                      color: Colors.pink,
+                                      size: 24.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            backgroundColor:
+                                const Color.fromARGB(255, 0, 25, 43),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            } else {
+              return Center(child: Text('Erro: ${snapshot.error}'));
+            }
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddProductDialog,
