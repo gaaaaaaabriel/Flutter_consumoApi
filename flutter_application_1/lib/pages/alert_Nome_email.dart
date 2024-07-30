@@ -6,7 +6,8 @@ import 'package:flutter_application_1/utils/atlualizar.dart';
 import 'package:http/http.dart' as http;
 
 class AlertNomeEmail extends StatefulWidget {
-  const AlertNomeEmail({super.key});
+  final List<Produto> produtos;
+  const AlertNomeEmail({super.key, required this.produtos});
 
   @override
   State<AlertNomeEmail> createState() => _AlertNomeEmailState();
@@ -49,22 +50,30 @@ class _AlertNomeEmailState extends State<AlertNomeEmail> {
   }
 
   // Método para atualizar registros do banco de dados
+
   Future<void> atualizarRegistro(int id, String nome, String email) async {
-    String url = "http://192.168.5.84/api_vazia/produtos/$id";
+    String baseUrl = "http://192.168.5.84/api_vazia/produtos";
+    String url = "$baseUrl/$id";
 
-    var response = await http.put(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'nome': nome,
-        'email': email,
-      }),
-    );
+    try {
+      var response = await http.put(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'nome': nome,
+          'email': email,
+        }),
+      );
 
-    if (response.statusCode != 200) {
-      debugPrint('Erro ao atualizar produto: ${response.body}');
+      if (response.statusCode == 200) {
+        debugPrint('Produto atualizado com sucesso!');
+      } else {
+        debugPrint('Erro ao atualizar produto: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('Ocorreu um erro: $e');
     }
   }
 
