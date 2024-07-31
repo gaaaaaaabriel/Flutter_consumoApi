@@ -13,7 +13,6 @@ class ProdutosPages extends StatefulWidget {
 
 class _ProdutosPagesState extends State<ProdutosPages> {
   final TextEditingController _searchController = TextEditingController();
-  final ProdutosRepositrys crud = ProdutosRepositrys();
   final ProdutosController controller = ProdutosController();
 
   List<Produto> _produtos = [];
