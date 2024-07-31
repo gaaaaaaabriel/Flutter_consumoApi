@@ -76,9 +76,17 @@ class EditarRegistroDialog {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 255, 17, 0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 20.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
                   child: const Text(
                     "Cancelar",
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white, fontSize: 16.0),
                   ),
                 ),
                 TextButton(
@@ -89,13 +97,21 @@ class EditarRegistroDialog {
                     );
                     Navigator.of(context).pop();
                   },
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 0, 255, 8),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 20.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
                   child: Text(
                     buttonFunc,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white, fontSize: 16.0),
                   ),
                 ),
               ],
-            ),
+            )
           ],
           backgroundColor: const Color.fromARGB(255, 0, 25, 43),
         );

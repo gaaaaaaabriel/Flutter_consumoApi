@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ErroDialog {
+class MostrarErro {
   static void mostrarErro(BuildContext context, String mensagem) {
     showDialog(
       context: context,

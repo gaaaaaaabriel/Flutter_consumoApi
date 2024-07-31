@@ -50,7 +50,6 @@ class _AlertNomeEmailState extends State<AlertNomeEmail> {
   }
 
   // Método para atualizar registros do banco de dados
-
   Future<void> atualizarRegistro(int id, String nome, String email) async {
     String baseUrl = "http://192.168.5.84/api_vazia/produtos";
     String url = "$baseUrl/$id";
@@ -133,7 +132,6 @@ class _AlertNomeEmailState extends State<AlertNomeEmail> {
                                       await atualizarRegistro(
                                           registro.id, nome, email);
                                       setState(() {
-                                        // Atualiza a lista de registros
                                         Navigator.of(context).pop();
                                       });
                                     },

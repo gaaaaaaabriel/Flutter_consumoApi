@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controller/produtos_controller.dart';
-import 'package:flutter_application_1/models/produto.dart';
-import 'package:flutter_application_1/repository/produtos_repositrys.dart';
 import 'package:flutter_application_1/utils/atlualizar.dart';
+import 'package:flutter_application_1/utils/searchBar.dart';
 
 class ProdutosPages extends StatefulWidget {
   const ProdutosPages({super.key});
@@ -12,132 +11,48 @@ class ProdutosPages extends StatefulWidget {
 }
 
 class _ProdutosPagesState extends State<ProdutosPages> {
+  //instancias
   final TextEditingController _searchController = TextEditingController();
   final ProdutosController controller = ProdutosController();
 
-  List<Produto> _produtos = [];
-  List<Produto> _produtosFiltrados = [];
-  
-
+  //funções
   @override
   void dispose() {
-    _searchController
-        .dispose(); // Limpa o controlador quando o widget for removido
+    _searchController.dispose();
+    controller.dispose();
     super.dispose();
-  }
-
-//----------------------------------------------------------------------\\
-  Future<void> buscarRegistros2() async {
-    _produtos = await crud.buscarRegistros();
-    setState(() {
-      _produtosFiltrados = _produtos;
-    });
-  }
-
-  Future<void> excluirRegistros2(int id) async {
-    bool sucesso = await crud.excluirRegistros(id);
-    if (sucesso) {
-      await buscarRegistros2();
-    }
-  }
-
-  Future<void> atualizarRegistro2(int id, String nome, String email) async {
-    bool sucesso = await crud.atualizarRegistro(id, nome, email);
-    if (sucesso) {
-      setState(() {});
-      await buscarRegistros2();
-    }
-  }
-
-  Future<void> adicionarRegistros2(String nome, String email) async {
-    bool sucesso = await crud.adicionarRegistro(nome, email);
-    if (sucesso) {
-      await buscarRegistros2();
-    }
-  }
-//----------------------------------------------------------------------\\
-
-  //funçaõ para filtrar os registros
-  void _filtrarRegistros() {
-    String pesquisa = _searchController.text.toLowerCase();
-    setState(() {
-      _produtosFiltrados = _produtos.where((produto) {
-        return produto.nome.toLowerCase().contains(pesquisa) ||
-            produto.email.toLowerCase().contains(pesquisa);
-      }).toList();
-    });
-  }
-
-  void _showAddProductDialog() {
-    EditarRegistroDialog(
-      nomePri: 'Adicionar Registros',
-      buttonFunc: 'Adicionar',
-      context: context,
-      nomeAtual: "",
-      emailAtual: "",
-      onSalvar: (String nome, String email) async {
-        if (nome.trim().isNotEmpty && email.trim().isNotEmpty) {
-          await adicionarRegistros2(nome, email);
-        } else {
-          debugPrint("Erro: Campos não podem estar vazios");
-        }
-      },
-    ).mostrarDialog();
   }
 
   @override
   void initState() {
     super.initState();
-    controller.buscarBuilder = controller.buscarRegistros2();
-    
+    controller.addListener(() {
+      setState(() {});
+    });
+    controller.context = context;
+    controller.buscarRegistro = controller.buscarRegistros2();
   }
 
-  Future<void> _refresh() async {
-    await buscarRegistros2();
-  }
-
+  //Widget
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: TextField(
-          controller: _searchController,
-          decoration: const InputDecoration(
-            hintText: 'Pesquisar',
-            suffixIcon: Icon(Icons.search),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8.0)),
-              borderSide: BorderSide(
-                color: Color.fromARGB(255, 0, 25, 43),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8.0)),
-              borderSide: BorderSide(
-                color: Color.fromARGB(255, 0, 25, 43),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8.0)),
-              borderSide: BorderSide(
-                color: Color.fromARGB(255, 0, 25, 43),
-              ),
-            ),
-          ),
-          onChanged: (text) {
-            _filtrarRegistros(); // Atualiza a lista filtrada quando o texto muda
-          },
+        title: BarraDePesquisa(
+          nomeBarra: 'Pesquisa',
+          searchController: _searchController,
+          controller: controller,
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: _refresh,
+        onRefresh: controller.refresh,
         child: FutureBuilder(
-          future:  controller.buscarBuilder,
+          future: controller.buscarRegistro,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (!snapshot.hasError) {
-              var registros = _produtosFiltrados;
+              var registros = controller.produtosFiltrados;
 
               return ListView.builder(
                 itemCount: registros.length,
@@ -182,12 +97,9 @@ class _ProdutosPagesState extends State<ProdutosPages> {
                                         nomeAtual: registro.nome,
                                         emailAtual: registro.email,
                                         onSalvar: (nome, email) async {
-                                          await atualizarRegistro2(
+                                          await controller.atualizarRegistro2(
                                               registro.id, nome, email);
-                                          setState(() {
-                                            // Atualiza a lista de registros
-                                            Navigator.of(context).pop();
-                                          });
+                                          Navigator.of(context).pop();
                                         },
                                       ).mostrarDialog();
                                     },
@@ -198,10 +110,9 @@ class _ProdutosPagesState extends State<ProdutosPages> {
                                   ),
                                   TextButton(
                                     onPressed: () async {
-                                      await excluirRegistros2(registro.id);
-                                      setState(() {
-                                        Navigator.of(context).pop();
-                                      });
+                                      await controller
+                                          .excluirRegistros2(registro.id);
+                                      Navigator.of(context).pop();
                                     },
                                     child: const Icon(
                                       Icons.auto_delete,
@@ -228,7 +139,7 @@ class _ProdutosPagesState extends State<ProdutosPages> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddProductDialog,
+        onPressed: controller.showAddProductDialog,
         backgroundColor: const Color.fromARGB(255, 0, 25, 43),
         child: const Icon(
           Icons.add,

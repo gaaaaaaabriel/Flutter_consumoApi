@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_application_1/models/produto.dart';
 import 'package:flutter_application_1/repository/produtos_repositrys.dart';
 import 'package:flutter_application_1/utils/atlualizar.dart';
 
-class ProdutosController{
+class ProdutosController extends ChangeNotifier {
+  //variavel
   final ProdutosRepositrys crud = ProdutosRepositrys();
-  List<Produto> _produtos = [];
-  List<Produto> _produtosFiltrados = [];
-  late Future<void> buscarBuilder;
+  List<Produto> produtos = [];
+  List<Produto> produtosFiltrados = [];
   late BuildContext context;
+  late Future<void> buscarRegistro;
 
+  //Funções
   Future<void> buscarRegistros2() async {
-    _produtos = await crud.buscarRegistros();
-    
-      _produtosFiltrados = _produtos;
-    
+    produtos = await crud.buscarRegistros();
+    produtosFiltrados = produtos;
+    notifyListeners();
   }
 
   Future<void> excluirRegistros2(int id) async {
@@ -27,7 +29,6 @@ class ProdutosController{
   Future<void> atualizarRegistro2(int id, String nome, String email) async {
     bool sucesso = await crud.atualizarRegistro(id, nome, email);
     if (sucesso) {
-      
       await buscarRegistros2();
     }
   }
@@ -39,17 +40,16 @@ class ProdutosController{
     }
   }
 
-  //funçaõ para filtrar os registros
-  void filtrarRegistros(TextEditingController searchController) {
-    String pesquisa = searchController.text.toLowerCase();
-    
-      _produtosFiltrados = _produtos.where((produto) {
-        return produto.nome.toLowerCase().contains(pesquisa) ||
-            produto.email.toLowerCase().contains(pesquisa);
-      }).toList();
-  
+  void filtrarRegistros(String pesquisa) {
+    debugPrint("AQUI");
+    produtosFiltrados = produtos.where((produto) {
+      return produto.nome.toLowerCase().contains(pesquisa) ||
+          produto.email.toLowerCase().contains(pesquisa);
+    }).toList();
+    notifyListeners();
   }
 
+  //PopUp
   void showAddProductDialog() {
     EditarRegistroDialog(
       nomePri: 'Adicionar Registros',
@@ -67,4 +67,7 @@ class ProdutosController{
     ).mostrarDialog();
   }
 
+  Future<void> refresh() async {
+    await buscarRegistros2();
+  }
 }
